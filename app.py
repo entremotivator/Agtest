@@ -1272,9 +1272,11 @@ def show_calendar_page():
         
         # Edit appointment form
         with st.expander("✏️ Edit Appointment", expanded=False):
-            event_titles = [f"{row['title']} ({pd.to_datetime(row['start']).strftime('%m/%d %H:%M')})" 
-                           for _,  ({pd.to_datetime(row['start']).strftime('%m/%d %H:%M')})" 
-                           for _, row in st.session_state.calendar_events.iterrows()]
+    event_titles = [
+        f"{row['title']} ({pd.to_datetime(row['start']).strftime('%m/%d %H:%M')})"
+        for _, row in st.session_state.calendar_events.iterrows()
+    ]
+
             
             if event_titles:
                 selected_event = st.selectbox("Select Event to Edit", event_titles)
