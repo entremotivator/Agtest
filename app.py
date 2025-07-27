@@ -1218,48 +1218,53 @@ def show_calendar_page():
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    with col2:
-        st.markdown("### 📋 Quick Actions")
-        
-        # Add new appointment form
-        with st.expander("➕ Add New Appointment", expanded=False):
-            with st.form("add_appointment"):
-                st.markdown("#### 📝 Appointment Details")
-                
-                title = st.text_input("Title*", placeholder="e.g., Demo with Customer")
-                customer = st.text_input("Customer", placeholder="Customer name")
-                agent = st.selectbox("Agent", ["AI Agent Emma", "AI Agent Alex", "AI Agent Sophia", "Jessica Martinez"])
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    start_date = st.date_input("Start Date", value=datetime.now().date())
-                    start_time = st.time_input("Start Time", value=datetime.now().time())
-                
-                with col2:
-                    duration = st.selectbox("Duration", ["30 min", "1 hour", "1.5 hours", "2 hours"])
-                    appointment_type = st.selectbox("Type", ["Demo", "Follow-up", "Support", "Sales Call", "Meeting"])
-                
-                description = st.text_area("Description", placeholder="Additional details...")
-                
-                if st.form_submit_button("📅 Schedule Appointment", use_container_width=True):
-                    if title:
-                        # Calculate end time
-                        duration_minutes = {"30 min": 30, "1 hour": 60, "1.5 hours": 90, "2 hours": 120}[duration]
-                        start_datetime = datetime.combine(start_date, start_time)
-                        end_datetime = start_datetime + timedelta(minutes=duration_minutes)
-                        
-                        # Create new event
-                        new_event = {
-                            "id": str(uuid.uuid4()),
-                            "title": title,
-                            "start": start_datetime.isoformat(),
-                            "end": end_datetime.isoformat(),
-                            "description": description,
-                            "customer": customer,
-                            "agent": agent,
-                            "type": appointment_type,
-                            "status": "Scheduled"
-                        }
+    with st.expander("➕ Add New Appointment", expanded=False):
+    with st.form("add_appointment"):
+        title = st.text_input("Title*", placeholder="e.g., Demo with Customer")
+        customer = st.text_input("Customer", placeholder="Customer name")
+        agent = st.selectbox("Agent", ["AI Agent Emma", "AI Agent Alex", "AI Agent Sophia", "Jessica Martinez"])
+
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input("Start Date", value=datetime.now().date())
+            start_time = st.time_input("Start Time", value=datetime.now().time())
+        with col2:
+            duration = st.selectbox("Duration", ["30 min", "1 hour", "1.5 hours", "2 hours"])
+            appointment_type = st.selectbox("Type", ["Demo", "Follow-up", "Support", "Sales Call", "Meeting"])
+
+        description = st.text_area("Description", placeholder="Additional details...")
+
+        if st.form_submit_button("📅 Schedule Appointment", use_container_width=True):
+            if title:
+                start_dt = datetime.combine(start_date, start_time)
+                end_dt = start_dt + timedelta(minutes={"30 min": 30, "1 hour": 60, "1.5 hours": 90, "2 hours": 120}[duration])
+                new_event = {
+                    "id": str(uuid.uuid4()),
+                    "title": title,
+                    "start": start_dt.isoformat(),
+                    "end": end_dt.isoformat(),
+                    "description": description,
+                    "customer": customer,
+                    "agent": agent,
+                    "type": appointment_type,
+                    "status": "Scheduled"
+                }
+                st.session_state.calendar_events = pd.concat(
+                    [st.session_state.get("calendar_events", pd.DataFrame()), pd.DataFrame([new_event])],
+                    ignore_index=True
+                )
+                st.success("✅ Appointment scheduled!")
+
+with st.expander("✏️ Edit Appointment", expanded=False):
+    if "calendar_events" in st.session_state and not st.session_state.calendar_events.empty:
+        event_titles = [
+            f"{row['title']} ({pd.to_datetime(row['start']).strftime('%m/%d %H:%M')})"
+            for _, row in st.session_state.calendar_events.iterrows()
+        ]
+        st.selectbox("Select an event to edit", event_titles)
+    else:
+        st.warning("No events to edit.")
+
                         
                         # Save event
                         if save_calendar_event(new_event):
