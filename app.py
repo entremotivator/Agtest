@@ -1649,6 +1649,9 @@ with tab7:
         st.metric("📡 Requests/min", requests_per_min)
         st.metric("❌ Error Rate", f"{error_rate:.2f}%")
 
+if 'crm_data' in st.session_state and not st.session_state.crm_data.empty:
+    # show dashboard
+    st.dataframe(st.session_state.crm_data)
 else:
     st.markdown("""
     <div style="text-align: center; padding: 3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
@@ -1658,7 +1661,6 @@ else:
         <p>The dashboard supports comprehensive call center data with transcripts, customer information, and performance metrics.</p>
     </div>
     """, unsafe_allow_html=True)
-
 # Enhanced footer
 st.markdown("---")
 st.markdown(f"""
